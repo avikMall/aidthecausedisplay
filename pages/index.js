@@ -1,54 +1,46 @@
-// import Head from 'next/head'
-// import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-// import { google } from 'googleapis';
+import { google } from 'googleapis';
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      Aid the cause
-    </div>
-  )
+export async function getStaticProps({ query }) {
+
+  // Auth
+  const auth = await google.auth.getClient({ scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] });
+
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  // Query
+
+  const { id } = 0;
+  const range = `Sheet1!F:F`;
+
+  // const totCol = await sheets.spreadsheets.values.get({
+  //   spreadsheetId: process.env.SHEET_ID,
+  //   tot,
+  // });
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: process.env.SHEET_ID,
+    range,
+  });
+
+  
+
+  // Result
+
+  const data = response.data.values;
+  const totalVal = parseInt(data.slice(-1)[0][0]) * 4;
+
+  return { 
+      props: {
+          totalVal,
+          // totalVal,
+      } 
+  }
 }
 
-
-// export default function getServerSideProps({ query }) {
-
-//     // Auth
-//     const auth = google.auth.getClient({ scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] });
-
-//     const sheets = google.sheets({ version: 'v4', auth });
-
-//     // Query
-
-//     const { id } = query;
-//     const range = `Sheet1!A${id}:C${id}`;
-
-//     const response = sheets.spreadsheets.values.get({
-//       spreadsheetId: process.env.SHEET_ID,
-//       range,
-//     });
-
-//     // Result
-
-//     const [amount, content] = response.data.values[0];
-//     // console.log(amount, content)
-
-//     return { 
-//         props: {
-//             amount,
-//             content
-//         } 
-//     }
-// }
-
-// export default function Post({ amount, content }) {
-//     return (
-//       <div className={styles.container}>
-//       <article>
-//           <h1>{amount}</h1>
-//           <div>{content}</div>
-//       </article>
-//       </div>
-//     )
-// }
+export default function Post({ totalVal }) {
+  return (
+    <div className='outer'>      
+      <div className='total-txt'>{"$" + totalVal}</div>
+    </div>
+  );
+}
